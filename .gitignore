@@ -1,0 +1,15 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Env files
+*.env
+*.pem
+*.key
+
+# Reports
+reports/
+sbom/
+zap-report.html

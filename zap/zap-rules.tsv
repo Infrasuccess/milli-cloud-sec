@@ -1,0 +1,4 @@
+10021	IGNORE	(Directory Browsing)
+10023	IGNORE	(Information Disclosure - Debug Error Messages)
+10027	IGNORE	(Information Disclosure - Suspicious Comments)
+10098	IGNORE	(Cross-Domain Misconfiguration)
