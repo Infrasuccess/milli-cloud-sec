@@ -1,13 +1,13 @@
 data "aws_caller_identity" "current" {}
 data "aws_availability_zones" "available" {}
 
-data "aws_ami" "amzn2" {
+data "aws_ami" "rhel" {
   most_recent = true
-  owners      = ["137112412989"]
+  owners      = ["309956199498"]
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["RHEL-9.*_HVM-*-x86_64-*-Hourly2-GP3"]
   }
 }
 
@@ -15,10 +15,18 @@ resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-vpc"
+  }
 }
 
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-igw"
+  }
 }
 
 resource "aws_subnet" "public" {
@@ -26,10 +34,18 @@ resource "aws_subnet" "public" {
   cidr_block              = var.public_subnet_cidr
   availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-public-subnet"
+  }
 }
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-public-rt"
+  }
 }
 
 resource "aws_route" "default_igw" {
@@ -47,6 +63,10 @@ resource "aws_security_group" "target_sg" {
   name        = "${var.project_name}-${var.environment}-target-sg"
   description = "Target SG for vulnerable app lab"
   vpc_id      = aws_vpc.this.id
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-target-sg"
+  }
 
   ingress {
     description = "HTTP for DVWA / DAST target"
@@ -89,6 +109,10 @@ resource "aws_security_group" "scanner_sg" {
   description = "Scanner/jump host SG"
   vpc_id      = aws_vpc.this.id
 
+  tags = {
+    Name = "${var.project_name}-${var.environment}-scanner-sg"
+  }
+
   dynamic "ingress" {
     for_each = var.enable_ssh ? [1] : []
     content {
@@ -112,6 +136,10 @@ resource "aws_security_group" "scanner_sg" {
 resource "aws_iam_role" "ec2_ssm_role" {
   name = "${var.project_name}-${var.environment}-ec2-ssm-role"
 
+  tags = {
+    Name = "${var.project_name}-${var.environment}-ec2-ssm-role"
+  }
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -130,11 +158,15 @@ resource "aws_iam_role_policy_attachment" "ssm_core" {
 resource "aws_iam_instance_profile" "ec2_ssm_profile" {
   name = "${var.project_name}-${var.environment}-ec2-ssm-profile"
   role = aws_iam_role.ec2_ssm_role.name
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-ec2-ssm-profile"
+  }
 }
 
 #Create EC2 instances for the target and scanner
 resource "aws_instance" "target" {
-  ami                         = data.aws_ami.amzn2.id
+  ami                         = data.aws_ami.rhel.id
   instance_type               = var.instance_type
   subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.target_sg.id]
@@ -157,7 +189,7 @@ resource "aws_instance" "target" {
 }
 
 resource "aws_instance" "scanner" {
-  ami                         = data.aws_ami.amzn2.id
+  ami                         = data.aws_ami.rhel.id
   instance_type               = var.instance_type
   subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.scanner_sg.id]
@@ -208,6 +240,10 @@ resource "aws_budgets_budget" "monthly" {
 resource "aws_iam_role" "events_invoke_ssm_role" {
   name = "${var.project_name}-${var.environment}-events-invoke-ssm-role"
 
+  tags = {
+    Name = "${var.project_name}-${var.environment}-events-invoke-ssm-role"
+  }
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -237,11 +273,19 @@ resource "aws_iam_role_policy" "events_invoke_ssm_policy" {
 resource "aws_cloudwatch_event_rule" "start_rule" {
   name                = "${var.project_name}-${var.environment}-start-ec2"
   schedule_expression = var.start_cron_utc
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-start-ec2"
+  }
 }
 
 resource "aws_cloudwatch_event_rule" "stop_rule" {
   name                = "${var.project_name}-${var.environment}-stop-ec2"
   schedule_expression = var.stop_cron_utc
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-stop-ec2"
+  }
 }
 
 resource "aws_cloudwatch_event_target" "start_target" {
