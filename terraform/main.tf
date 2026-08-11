@@ -132,6 +132,7 @@ resource "aws_iam_instance_profile" "ec2_ssm_profile" {
   role = aws_iam_role.ec2_ssm_role.name
 }
 
+#Create EC2 instances for the target and scanner
 resource "aws_instance" "target" {
   ami                         = data.aws_ami.amzn2.id
   instance_type               = var.instance_type

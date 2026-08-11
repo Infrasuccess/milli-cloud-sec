@@ -1,7 +1,7 @@
 aws_region           = "us-east-1"
 project_name         = "milli-cloud-sec"
 environment          = "devsec"
-owner                = "hubani_deloitte"
+owner                = "Security Lab"
 instance_type        = "t2.micro"
 allowed_ingress_cidr = "0.0.0.0/0"
 enable_ssh           = false
