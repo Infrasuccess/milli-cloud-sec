@@ -8,5 +8,5 @@ enable_ssh           = false
 notification_email   = "guysbow@gmail.com"
 budget_limit_usd     = "25"
 
-start_cron_utc       = "cron(0 12 ? * MON-FRI *)"
-stop_cron_utc        = "cron(0 1 ? * MON-FRI *)"
+start_cron_utc = "cron(0 12 ? * MON-FRI *)"
+stop_cron_utc  = "cron(0 1 ? * MON-FRI *)"
