@@ -21,6 +21,16 @@ Personal AWS DevSecOps lab using Terraform + GitHub Actions with SAST, DAST, and
 2) Edit `notification_email` in `terraform.tfvars`
 3) `terraform init && terraform plan && terraform apply`
 
+## Terraform Layout
+- `providers.tf`, `versions.tf`, `variables.tf`, `outputs.tf` hold shared provider, version, input, and output definitions
+- `data.tf` contains shared AWS data sources
+- `network.tf` defines the VPC, subnet, internet gateway, and routing
+- `security_groups.tf` defines target and scanner security groups
+- `iam.tf` defines EC2 SSM access and EventBridge-to-SSM IAM permissions
+- `ec2.tf` defines the target and scanner EC2 instances
+- `budget.tf` defines the monthly AWS budget and alert notifications
+- `scheduler.tf` defines the start/stop EventBridge schedules for both EC2 instances
+
 ## GitHub Secrets
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
