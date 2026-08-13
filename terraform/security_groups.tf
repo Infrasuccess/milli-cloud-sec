@@ -23,17 +23,6 @@ resource "aws_security_group" "target_sg" {
     cidr_blocks = [var.allowed_ingress_cidr]
   }
 
-  dynamic "ingress" {
-    for_each = var.enable_ssh ? [1] : []
-    content {
-      description = "SSH (optional)"
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = [var.allowed_ingress_cidr]
-    }
-  }
-
   egress {
     description = "Allow all egress"
     from_port   = 0
@@ -52,17 +41,6 @@ resource "aws_security_group" "scanner_sg" {
     Name = "${var.project_name}-${var.environment}-scanner-sg"
   }
 
-  dynamic "ingress" {
-    for_each = var.enable_ssh ? [1] : []
-    content {
-      description = "SSH (optional)"
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = [var.allowed_ingress_cidr]
-    }
-  }
-
   egress {
     description = "Allow all egress"
     from_port   = 0
@@ -70,4 +48,26 @@ resource "aws_security_group" "scanner_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "target_ssh_desktop" {
+  count = var.enable_ssh ? 1 : 0
+
+  security_group_id = aws_security_group.target_sg.id
+  description       = "Desktop"
+  ip_protocol       = "tcp"
+  from_port         = 22
+  to_port           = 22
+  cidr_ipv4         = "192.168.1.100/32"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "target_ssh_macbook" {
+  count = var.enable_ssh ? 1 : 0
+
+  security_group_id = aws_security_group.target_sg.id
+  description       = "Macbook"
+  ip_protocol       = "tcp"
+  from_port         = 22
+  to_port           = 22
+  cidr_ipv4         = "192.168.1.234/32"
 }

@@ -47,13 +47,13 @@ variable "key_name" {
 }
 
 variable "allowed_ingress_cidr" {
-  description = "Allowed ingress CIDR for HTTP/HTTPS to target and SSH if enabled"
+  description = "Allowed ingress CIDR for HTTP/HTTPS to target"
   type        = string
   default     = "0.0.0.0/0"
 }
 
 variable "enable_ssh" {
-  description = "Enable SSH 22 ingress (prefer false and use SSM)"
+  description = "Enable SSH 22 ingress to the target from the named IPs in security_groups.tf"
   type        = bool
   default     = false
 }

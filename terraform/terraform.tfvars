@@ -3,8 +3,9 @@ project_name         = "milli-cloud-sec"
 environment          = "devsec"
 owner                = "Security Lab"
 instance_type        = "t2.micro"
+key_name             = "Milli-SecLab-Keypair"
 allowed_ingress_cidr = "0.0.0.0/0"
-enable_ssh           = false
+enable_ssh           = true
 notification_email   = "guysbow@gmail.com"
 budget_limit_usd     = "25"
 
