@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: terraform-apply-devsec
+  group: terraform-devsec-apply
   cancel-in-progress: false
 
 env:
@@ -55,31 +55,25 @@ jobs:
             --query "Table.TableStatus" \
             --output text
 
-      - name: Install Terraform CLI (non-interactive)
-        run: |
-          set -euo pipefail
-          wget -q "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip" -O /tmp/terraform.zip
-          rm -f /tmp/terraform
-          unzip -o /tmp/terraform.zip -d /tmp
-          sudo install -m 0755 /tmp/terraform /usr/local/bin/terraform
-          terraform version
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Fmt Check
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform fmt -check -recursive
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} fmt -check -recursive
 
-      - name: Terraform Init (reconfigure backend)
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform init -reconfigure -input=false
+      - name: Terraform Init
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -reconfigure -input=false
 
       - name: Terraform Validate
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform validate
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} validate
 
       - name: Terraform Plan
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan -input=false -out=tfplan -var="notification_email=${{ secrets.BUDGET_EMAIL }}"
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} plan -input=false -out=tfplan -var="notification_email=${{ secrets.BUDGET_EMAIL }}"
 
       - name: Terraform Apply
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -input=false -auto-approve tfplan
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} apply -input=false -auto-approve tfplan
+
+      - name: Terraform Output
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} output
