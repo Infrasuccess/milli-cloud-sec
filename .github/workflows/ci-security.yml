@@ -64,10 +64,14 @@ jobs:
 
   dast-zap:
     name: DAST (OWASP ZAP Baseline)
-    if: ${{ github.event_name == 'workflow_dispatch' && secrets.DAST_TARGET_URL != '' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     needs: terraform-and-security
     steps:
+      - name: Check DAST target secret
+        run: |
+          test -n "${{ secrets.DAST_TARGET_URL }}" || (echo "Missing DAST_TARGET_URL secret" && exit 1)
+
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
