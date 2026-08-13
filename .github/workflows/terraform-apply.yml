@@ -6,19 +6,31 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: terraform-apply-devsec
+  cancel-in-progress: false
+
 env:
   TF_WORKING_DIR: terraform
+  AWS_REGION: us-east-1
+  TF_VERSION: 1.9.8
+  TF_IN_AUTOMATION: "true"
 
 jobs:
   apply:
     runs-on: ubuntu-latest
     environment: devsec
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
       - name: Preflight secret check
         run: |
+          set -euo pipefail
           test -n "${{ secrets.AWS_ACCESS_KEY_ID }}" || (echo "Missing AWS_ACCESS_KEY_ID" && exit 1)
           test -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" || (echo "Missing AWS_SECRET_ACCESS_KEY" && exit 1)
           test -n "${{ secrets.BUDGET_EMAIL }}" || (echo "Missing BUDGET_EMAIL" && exit 1)
@@ -28,26 +40,46 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: AWS identity check
+        run: aws sts get-caller-identity
+
+      - name: Backend existence check
+        run: |
+          set -euo pipefail
+          aws s3api head-bucket --bucket "milli-cloud-sec-tf-state-419467346711"
+          aws dynamodb describe-table \
+            --table-name "milli-cloud-sec-tf-locks" \
+            --region "${AWS_REGION}" \
+            --query "Table.TableStatus" \
+            --output text
 
       - name: Install Terraform CLI (non-interactive)
         run: |
           set -euo pipefail
-          TF_VERSION=1.9.8
           wget -q "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip" -O /tmp/terraform.zip
           rm -f /tmp/terraform
           unzip -o /tmp/terraform.zip -d /tmp
           sudo install -m 0755 /tmp/terraform /usr/local/bin/terraform
           terraform version
 
-      - name: Terraform Init
+      - name: Terraform Fmt Check
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform init
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init (reconfigure backend)
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -reconfigure -input=false
+
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform validate
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan -var="notification_email=${{ secrets.BUDGET_EMAIL }}"
+        run: terraform plan -input=false -out=tfplan -var="notification_email=${{ secrets.BUDGET_EMAIL }}"
 
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve -var="notification_email=${{ secrets.BUDGET_EMAIL }}"
+        run: terraform apply -input=false -auto-approve tfplan
