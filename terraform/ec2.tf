@@ -8,7 +8,7 @@ resource "aws_instance" "target" {
   associate_public_ip_address = true
 
   root_block_device {
-    volume_size = 8
+    volume_size = 12
     volume_type = "gp3"
     encrypted   = true
   }
@@ -31,7 +31,7 @@ resource "aws_instance" "scanner" {
   associate_public_ip_address = true
 
   root_block_device {
-    volume_size = 8
+    volume_size = 12
     volume_type = "gp3"
     encrypted   = true
   }

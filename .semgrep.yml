@@ -1,2 +1,7 @@
 rules:
-  - p/default
+  - id: hardcoded-secret-pattern
+    patterns:
+      - pattern-regex: '(AKIA[0-9A-Z]{16}|aws_secret_access_key|password\s*=)'
+    message: "Potential hardcoded secret found"
+    languages: [generic]
+    severity: ERROR
