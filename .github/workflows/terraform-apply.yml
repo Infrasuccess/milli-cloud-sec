@@ -30,8 +30,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Install Terraform CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          wget https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
+          unzip terraform_1.9.8_linux_amd64.zip
+          sudo mv terraform /usr/local/bin/terraform
+          terraform version
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
