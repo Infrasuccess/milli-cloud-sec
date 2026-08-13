@@ -66,17 +66,40 @@ jobs:
           format: table
           exit-code: "0"
 
-      - name: Optional DAST precheck
+      - name: Optional DAST precheck (secret + network reachability)
         id: dast_precheck
         run: |
+          set -euo pipefail
+
           if [ -z "${{ secrets.DAST_TARGET_URL }}" ]; then
             echo "run_dast=false" >> "$GITHUB_OUTPUT"
-          else
+            echo "DAST_TARGET_URL is not set. Skipping DAST."
+            exit 0
+          fi
+
+          url="${{ secrets.DAST_TARGET_URL }}"
+          host="$(echo "$url" | sed -E 's#https?://([^/:]+).*#\1#')"
+          port="$(echo "$url" | sed -nE 's#https?://[^/:]+:([0-9]+).*#\1#p')"
+
+          if [ -z "${port}" ]; then
+            if echo "$url" | grep -q '^https://'; then
+              port=443
+            else
+              port=80
+            fi
+          fi
+
+          if nc -z -w 5 "$host" "$port"; then
             echo "run_dast=true" >> "$GITHUB_OUTPUT"
+            echo "Target reachable at $host:$port"
+          else
+            echo "run_dast=false" >> "$GITHUB_OUTPUT"
+            echo "Target not reachable at $host:$port. Skipping DAST."
           fi
 
       - name: ZAP Baseline
         if: steps.dast_precheck.outputs.run_dast == 'true'
+        continue-on-error: true
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: ${{ secrets.DAST_TARGET_URL }}
