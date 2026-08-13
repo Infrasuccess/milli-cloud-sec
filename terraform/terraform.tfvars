@@ -8,6 +8,5 @@ allowed_ingress_cidr = "0.0.0.0/0"
 enable_ssh           = true
 notification_email   = "guysbow@gmail.com"
 budget_limit_usd     = "25"
-
 start_cron_utc = "cron(0 12 ? * MON-FRI *)"
 stop_cron_utc  = "cron(0 1 ? * MON-FRI *)"
