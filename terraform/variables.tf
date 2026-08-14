@@ -80,3 +80,22 @@ variable "stop_cron_utc" {
   type        = string
   default     = "cron(0 1 ? * MON-FRI *)"
 }
+
+variable "enable_qualys_cspm" {
+  description = "Enable Qualys CSPM connector integration"
+  type        = bool
+  default     = false
+}
+
+variable "qualys_account_id" {
+  description = "Qualys AWS Account ID for assume role (from Qualys console)"
+  type        = string
+  default     = ""
+}
+
+variable "qualys_external_id" {
+  description = "Qualys External ID for enhanced security (from Qualys connector setup)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

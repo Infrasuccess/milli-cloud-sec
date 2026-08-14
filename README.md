@@ -3,7 +3,7 @@
 Personal AWS DevSecOps lab using Terraform + GitHub Actions with SAST, DAST, and SCA.
 
 ## Goals
-- Learn cloud security hands-on
+- Simulate cloud security in a production style environment
 - Run a lightweight AWS lab with:
   - 2 EC2 instances (`t2.micro`)
   - RHEL 9 target host running DVWA in Docker
@@ -17,19 +17,6 @@ Personal AWS DevSecOps lab using Terraform + GitHub Actions with SAST, DAST, and
 - Filesystem and dependency scanning: Trivy
 - DAST: OWASP ZAP baseline scan (when `DAST_TARGET_URL` is set and reachable)
 
-## Quick Start
-1) Copy `terraform/terraform.tfvars.example` to `terraform/terraform.tfvars`
-2) Edit at least:
-   - `notification_email`
-   - `key_name` if you want SSH access
-   - `enable_ssh` if you want the named SSH rules enabled
-3) Ensure the remote Terraform backend already exists:
-   - S3 bucket: `milli-cloud-sec-tf-state-419467346711`
-   - DynamoDB table: `milli-cloud-sec-tf-locks`
-4) Run:
-   - `terraform -chdir=terraform init`
-   - `terraform -chdir=terraform plan`
-   - `terraform -chdir=terraform apply`
 
 ## Terraform Layout
 - `providers.tf`, `versions.tf`, `variables.tf`, `outputs.tf` hold shared provider, version, input, and output definitions
