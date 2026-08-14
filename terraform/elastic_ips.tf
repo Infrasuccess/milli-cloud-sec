@@ -24,24 +24,3 @@ resource "aws_eip" "scanner" {
     Role = "security-scanner"
   }
 }
-
-# Outputs: Reference these IPs in your scripts, DNS, firewall rules, etc.
-output "target_static_ip" {
-  description = "Static IP address of target (DVWA)"
-  value       = aws_eip.target.public_ip
-}
-
-output "scanner_static_ip" {
-  description = "Static IP address of scanner/jump host"
-  value       = aws_eip.scanner.public_ip
-}
-
-output "target_eip_allocation_id" {
-  description = "Allocation ID of target EIP (for manual management)"
-  value       = aws_eip.target.id
-}
-
-output "scanner_eip_allocation_id" {
-  description = "Allocation ID of scanner EIP (for manual management)"
-  value       = aws_eip.scanner.id
-}

@@ -20,16 +20,25 @@ output "instance_ids" {
   }
 }
 
-# Elastic IP outputs (if enabled)
+# Elastic IP outputs (from elastic_ips.tf resources)
 output "target_static_ip" {
+  description = "Static IP address of target (DVWA)"
   value       = try(aws_eip.target.public_ip, null)
-  description = "Static Elastic IP for DVWA target (when allocated)"
 }
 
 output "scanner_static_ip" {
+  description = "Static IP address of scanner/jump host"
   value       = try(aws_eip.scanner.public_ip, null)
-  description = "Static Elastic IP for scanner host (when allocated)"
 }
 
-# Qualys CSPM outputs (if enabled) - defined in qualys_cspm.tf
-# Use 'terraform output qualys_role_arn' to retrieve the role ARN for Qualys connector setup
+output "target_eip_allocation_id" {
+  description = "Allocation ID of target EIP (for manual management)"
+  value       = try(aws_eip.target.id, null)
+}
+
+output "scanner_eip_allocation_id" {
+  description = "Allocation ID of scanner EIP (for manual management)"
+  value       = try(aws_eip.scanner.id, null)
+}
+
+# Qualys CSPM outputs (from qualys_cspm.tf resources)
