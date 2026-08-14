@@ -9,10 +9,11 @@ enable_ssh            = true
 notification_email    = "guysbow@gmail.com"
 budget_limit_usd      = "25"
 
-start_cron_utc        = "cron(0 12 ? * MON-FRI *)"
-stop_cron_utc         = "cron(0 1 ? * MON-FRI *)"
+start_cron_utc                = "cron(0 12 ? * MON-FRI *)"
+stop_cron_utc                 = "cron(0 1 ? * MON-FRI *)"
 
-enable_qualys_cspm        = true
-qualys_account_id         = "805950163170"
-qualys_external_id        = "US3-9214256"
-enable_qualys_iac_posture = true
+enable_qualys_cspm            = true
+qualys_account_id             = "805950163170"
+qualys_external_id            = "US3-9214256"
+enable_qualys_iac_posture     = true
+

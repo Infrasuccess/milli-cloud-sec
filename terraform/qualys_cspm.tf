@@ -241,3 +241,4 @@ output "qualys_iac_posture_enabled" {
   description = "Whether Qualys IaC Posture scanning is enabled"
   value       = var.enable_qualys_iac_posture
 }
+

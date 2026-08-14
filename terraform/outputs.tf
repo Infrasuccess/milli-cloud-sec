@@ -41,4 +41,3 @@ output "scanner_eip_allocation_id" {
   value       = try(aws_eip.scanner.id, null)
 }
 
-# Qualys CSPM outputs (from qualys_cspm.tf resources)
