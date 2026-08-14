@@ -64,6 +64,13 @@ Personal AWS DevSecOps lab using Terraform + GitHub Actions with SAST, DAST, and
   - requires typing `DESTROY` on manual dispatch
   - destroys the lab using the configured remote backend
 
+## GitHub Security Features
+- Code scanning is populated by `ci-security.yml` for tfsec, Checkov, Trivy, and Semgrep
+- DAST is run by ZAP in `ci-security.yml` and published as the `zap-report` workflow artifact when the target is reachable
+- Dependabot is configured in `.github/dependabot.yml` for:
+  - GitHub Actions dependencies
+  - Terraform providers and modules under `terraform/`
+
 ## Cost Control
 - Uses EC2 stop/start schedules
 - Includes AWS budget alerts

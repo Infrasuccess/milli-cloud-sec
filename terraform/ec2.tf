@@ -6,7 +6,6 @@ resource "aws_instance" "target" {
   iam_instance_profile        = aws_iam_instance_profile.ec2_ssm_profile.name
   key_name                    = var.key_name
   associate_public_ip_address = true
-  user_data_replace_on_change = true
 
   root_block_device {
     volume_size = 12
@@ -37,7 +36,6 @@ resource "aws_instance" "scanner" {
   iam_instance_profile        = aws_iam_instance_profile.ec2_ssm_profile.name
   key_name                    = var.key_name
   associate_public_ip_address = true
-  user_data_replace_on_change = true
 
   root_block_device {
     volume_size = 12
