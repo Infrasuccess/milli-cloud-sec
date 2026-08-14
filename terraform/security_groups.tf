@@ -74,18 +74,7 @@ resource "aws_vpc_security_group_ingress_rule" "target_ssh_desktop" {
   ip_protocol       = "tcp"
   from_port         = 22
   to_port           = 22
-  cidr_ipv4         = "192.168.1.100/32"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "target_ssh_macbook" {
-  count = var.enable_ssh ? 1 : 0
-
-  security_group_id = aws_security_group.target_sg.id
-  description       = "Macbook"
-  ip_protocol       = "tcp"
-  from_port         = 22
-  to_port           = 22
-  cidr_ipv4         = "192.168.1.234/32"
+  cidr_ipv4         = "108.239.113.218/32"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "scanner_ssh_desktop" {
@@ -98,4 +87,3 @@ resource "aws_vpc_security_group_ingress_rule" "scanner_ssh_desktop" {
   to_port           = 22
   cidr_ipv4         = "108.239.113.218/32"
 }
-
