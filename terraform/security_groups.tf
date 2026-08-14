@@ -32,6 +32,22 @@ resource "aws_security_group" "target_sg" {
   }
 }
 
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.this.id
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-default-sg"
+  }
+
+  egress {
+    description = "Allow all egress"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_security_group" "scanner_sg" {
   name        = "${var.project_name}-${var.environment}-scanner-sg"
   description = "Scanner/jump host SG"
