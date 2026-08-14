@@ -14,5 +14,5 @@ stop_cron_utc  = "cron(0 1 ? * MON-FRI *)"
 
 # Qualys CSPM Integration
 enable_qualys_cspm = true
-qualys_account_id  = "148141692175"
+qualys_account_id  = "57731278"
 qualys_external_id = "qta-9a7b3f2c1e4d8a5b"
