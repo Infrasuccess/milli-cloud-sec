@@ -1,6 +1,5 @@
 # Qualys Total Cloud (CSPM) - AWS IAM Permissions
 # Enables Qualys to scan AWS infrastructure for security posture and compliance
-# 
 # Required for:
 # - Cloud Security Posture Management (CSPM) scanning
 # - Infrastructure assessment
@@ -12,7 +11,7 @@
 # - qualys_account_id (string, from Qualys console)
 # - qualys_external_id (string, from Qualys console, sensitive)
 
-# Qualys CSPM IAM Policy - Minimal read-only permissions for scanning
+# Qualys CSPM IAM Policy - read-only permissions for scanning
 resource "aws_iam_policy" "qualys_cspm_policy" {
   count       = var.enable_qualys_cspm ? 1 : 0
   name        = "${var.project_name}-${var.environment}-qualys-cspm-policy"
@@ -174,9 +173,9 @@ resource "aws_iam_role" "qualys_cspm_role" {
   })
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-qualys-cspm-role"
-    Service     = "Qualys"
-    Purpose     = "CSPM"
+    Name    = "${var.project_name}-${var.environment}-qualys-cspm-role"
+    Service = "Qualys"
+    Purpose = "CSPM"
   }
 }
 
