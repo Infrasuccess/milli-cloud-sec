@@ -34,6 +34,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Prepare SARIF output directory
+        run: mkdir -p .reports
+
+      - name: Detect GitHub code scanning availability
+        id: code_scanning
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          status="$(curl -sS -o "$RUNNER_TEMP/code-scanning.json" -w "%{http_code}" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/code-scanning/alerts?per_page=1")"
+
+          if [ "$status" = "200" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "GitHub code scanning is available for this run."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "GitHub code scanning upload will be skipped for this run (HTTP $status)."
+            cat "$RUNNER_TEMP/code-scanning.json" || true
+          fi
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -53,16 +76,9 @@ jobs:
           working_directory: terraform
           format: sarif
           soft_fail: true
-          additional_args: --out tfsec.sarif
+          additional_args: --out .reports/tfsec
           version: v1.28.13
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload tfsec results to GitHub Security
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: terraform/tfsec.sarif
-          category: tfsec
 
       - name: Checkov scan
         uses: bridgecrewio/checkov-action@v12
@@ -70,14 +86,7 @@ jobs:
           directory: terraform
           soft_fail: true
           output_format: cli,sarif
-          output_file_path: console,results.sarif
-
-      - name: Upload Checkov results to GitHub Security
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: results.sarif
-          category: checkov
+          output_file_path: console,.reports/checkov.sarif
 
       - name: Trivy fs scan
         uses: aquasecurity/trivy-action@v0.36.0
@@ -85,17 +94,10 @@ jobs:
           scan-type: fs
           scan-ref: .
           format: sarif
-          output: trivy-results.sarif
+          output: .reports/trivy-results.sarif
           exit-code: "0"
           ignore-unfixed: true
           severity: CRITICAL,HIGH
-
-      - name: Upload Trivy results to GitHub Security
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-results.sarif
-          category: trivy
 
       - name: Set up Python for Semgrep
         uses: actions/setup-python@v5
@@ -106,15 +108,104 @@ jobs:
         run: python -m pip install --upgrade pip semgrep
 
       - name: Semgrep scan
-        run: semgrep scan --config .semgrep.yml --sarif --output semgrep.sarif .
+        run: semgrep scan --config .semgrep.yml --sarif --output .reports/semgrep.sarif .
         continue-on-error: true
 
-      - name: Upload Semgrep results to GitHub Security
+      - name: Normalize SARIF outputs
         if: always()
+        id: sarif_files
+        run: |
+          set -euo pipefail
+
+          normalize_file() {
+            dest="$1"
+            shift
+
+            for candidate in "$@"; do
+              if [ -f "$candidate" ]; then
+                if [ "$candidate" != "$dest" ]; then
+                  cp "$candidate" "$dest"
+                fi
+                return 0
+              fi
+            done
+
+            return 1
+          }
+
+          tfsec_found=false
+          if normalize_file ".reports/tfsec.sarif" \
+            ".reports/tfsec.sarif" \
+            ".reports/tfsec.sarif.sarif" \
+            "terraform/.reports/tfsec.sarif" \
+            "terraform/.reports/tfsec.sarif.sarif" \
+            "tfsec.sarif" \
+            "terraform/tfsec.sarif"; then
+            tfsec_found=true
+          fi
+
+          checkov_found=false
+          if normalize_file ".reports/checkov.sarif" \
+            ".reports/checkov.sarif" \
+            "results.sarif" \
+            "terraform/results.sarif"; then
+            checkov_found=true
+          fi
+
+          trivy_found=false
+          if normalize_file ".reports/trivy-results.sarif" \
+            ".reports/trivy-results.sarif" \
+            "trivy-results.sarif"; then
+            trivy_found=true
+          fi
+
+          semgrep_found=false
+          if normalize_file ".reports/semgrep.sarif" \
+            ".reports/semgrep.sarif" \
+            "semgrep.sarif"; then
+            semgrep_found=true
+          fi
+
+          echo "tfsec=${tfsec_found}" >> "$GITHUB_OUTPUT"
+          echo "checkov=${checkov_found}" >> "$GITHUB_OUTPUT"
+          echo "trivy=${trivy_found}" >> "$GITHUB_OUTPUT"
+          echo "semgrep=${semgrep_found}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload tfsec results to GitHub Security
+        if: always() && steps.code_scanning.outputs.enabled == 'true' && steps.sarif_files.outputs.tfsec == 'true'
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: semgrep.sarif
+          sarif_file: .reports/tfsec.sarif
+          category: tfsec
+
+      - name: Upload Checkov results to GitHub Security
+        if: always() && steps.code_scanning.outputs.enabled == 'true' && steps.sarif_files.outputs.checkov == 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: .reports/checkov.sarif
+          category: checkov
+
+      - name: Upload Trivy results to GitHub Security
+        if: always() && steps.code_scanning.outputs.enabled == 'true' && steps.sarif_files.outputs.trivy == 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: .reports/trivy-results.sarif
+          category: trivy
+
+      - name: Upload Semgrep results to GitHub Security
+        if: always() && steps.code_scanning.outputs.enabled == 'true' && steps.sarif_files.outputs.semgrep == 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: .reports/semgrep.sarif
           category: semgrep
+
+      - name: Upload SARIF reports as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-sarif-reports
+          path: .reports/
+          if-no-files-found: warn
 
       - name: Optional DAST precheck (secret + network reachability)
         id: dast_precheck

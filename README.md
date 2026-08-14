@@ -54,6 +54,7 @@ Personal AWS DevSecOps lab using Terraform + GitHub Actions with SAST, DAST, and
 - `ci-security.yml`
   - runs Terraform format and validate checks
   - uploads tfsec, Checkov, Trivy, and Semgrep SARIF results to the GitHub Security dashboard
+  - requires GitHub code scanning to be enabled in the repository settings for SARIF uploads to appear in the Security dashboard
   - uploads the ZAP baseline HTML report as the `zap-report` workflow artifact when `DAST_TARGET_URL` is set and reachable
 - `terraform-apply.yml`
   - configures AWS credentials
