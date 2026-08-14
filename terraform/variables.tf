@@ -99,3 +99,9 @@ variable "qualys_external_id" {
   default     = ""
   sensitive   = true
 }
+
+variable "enable_qualys_iac_posture" {
+  description = "Enable Qualys IaC Posture scanning for Terraform and CloudFormation"
+  type        = bool
+  default     = false
+}

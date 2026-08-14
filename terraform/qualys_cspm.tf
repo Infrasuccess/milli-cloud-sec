@@ -5,17 +5,20 @@
 # - Infrastructure assessment
 # - Compliance monitoring (CIS, PCI-DSS, etc.)
 # - Asset discovery and inventory
+# - IaC Posture scanning (Terraform, CloudFormation templates)
 #
 # Variables defined in variables.tf:
 # - enable_qualys_cspm (bool, default: false)
+# - enable_qualys_iac_posture (bool, default: false)
 # - qualys_account_id (string, from Qualys console)
 # - qualys_external_id (string, from Qualys console, sensitive)
 
 # Qualys CSPM IAM Policy - read-only permissions for scanning
+# Includes CloudFormation, Terraform state, and IaC Posture permissions
 resource "aws_iam_policy" "qualys_cspm_policy" {
   count       = var.enable_qualys_cspm ? 1 : 0
   name        = "${var.project_name}-${var.environment}-qualys-cspm-policy"
-  description = "Qualys CSPM read-only permissions for cloud security posture scanning"
+  description = "Qualys CSPM read-only permissions for cloud security posture and IaC scanning"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -143,6 +146,38 @@ resource "aws_iam_policy" "qualys_cspm_policy" {
           "config:List*"
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "QualysCloudFormationPermissions"
+        Effect = "Allow"
+        Action = [
+          "cloudformation:Describe*",
+          "cloudformation:GetTemplate*",
+          "cloudformation:List*"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "QualysS3StatePermissions"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::*-terraform-state*",
+          "arn:aws:s3:::*-terraform-state*/*"
+        ]
+      },
+      {
+        Sid    = "QualysIaCPosturePermissions"
+        Effect = "Allow"
+        Action = [
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:GetLogEvents"
+        ]
+        Resource = "*"
       }
     ]
   })
@@ -175,7 +210,7 @@ resource "aws_iam_role" "qualys_cspm_role" {
   tags = {
     Name    = "${var.project_name}-${var.environment}-qualys-cspm-role"
     Service = "Qualys"
-    Purpose = "CSPM"
+    Purpose = "CSPM and IaC Posture"
   }
 }
 
@@ -200,4 +235,9 @@ output "qualys_role_name" {
 output "qualys_policy_arn" {
   description = "ARN of the Qualys CSPM policy"
   value       = var.enable_qualys_cspm ? aws_iam_policy.qualys_cspm_policy[0].arn : null
+}
+
+output "qualys_iac_posture_enabled" {
+  description = "Whether Qualys IaC Posture scanning is enabled"
+  value       = var.enable_qualys_iac_posture
 }

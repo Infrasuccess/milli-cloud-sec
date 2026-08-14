@@ -13,6 +13,7 @@ start_cron_utc = "cron(0 12 ? * MON-FRI *)"
 stop_cron_utc  = "cron(0 1 ? * MON-FRI *)"
 
 # Qualys CSPM Integration
-enable_qualys_cspm = true
-qualys_account_id  = "805950163170"
-qualys_external_id = "US3-9214256"
+enable_qualys_cspm       = true
+qualys_account_id        = "805950163170"
+qualys_external_id       = "US3-9214256"
+enable_qualys_iac_posture = true
