@@ -51,7 +51,8 @@ jobs:
         with:
           working_directory: terraform
           additional_args: --soft-fail
-
+          version: v1.28.13
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkov scan
         uses: bridgecrewio/checkov-action@v12
         with:
