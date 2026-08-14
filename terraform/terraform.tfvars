@@ -16,4 +16,3 @@ enable_qualys_cspm        = true
 qualys_account_id         = "805950163170"
 qualys_external_id        = "US3-9214256"
 enable_qualys_iac_posture = true
-
