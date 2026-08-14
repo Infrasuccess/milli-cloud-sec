@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-yum update -y
-amazon-linux-extras install docker -y || true
-yum install -y docker
+dnf update -y
+dnf install -y dnf-plugins-core
+dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+dnf install -y docker-ce docker-ce-cli containerd.io
+
 systemctl enable docker
 systemctl start docker
 usermod -aG docker ec2-user
