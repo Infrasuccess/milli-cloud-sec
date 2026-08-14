@@ -19,7 +19,9 @@ resource "aws_instance" "target" {
     Role = "dast-target"
   }
 
-  user_data = templatefile("${path.module}/user_data_target.sh.tpl", {})
+  user_data = templatefile("${path.module}/user_data_target.sh.tpl", {
+    aws_region = var.aws_region
+  })
 
   tags = {
     Name = "${var.project_name}-${var.environment}-target"
@@ -49,7 +51,8 @@ resource "aws_instance" "scanner" {
   }
 
   user_data = templatefile("${path.module}/user_data_scanner.sh.tpl", {
-    target_ip = aws_instance.target.public_ip
+    aws_region = var.aws_region
+    target_ip  = aws_instance.target.public_ip
   })
 
   tags = {

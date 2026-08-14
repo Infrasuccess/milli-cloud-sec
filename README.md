@@ -53,8 +53,8 @@ Personal AWS DevSecOps lab using Terraform + GitHub Actions with SAST, DAST, and
 ## GitHub Actions Workflows
 - `ci-security.yml`
   - runs Terraform format and validate checks
-  - runs Semgrep, tfsec, Checkov, and Trivy
-  - runs ZAP baseline only when `DAST_TARGET_URL` is set and reachable
+  - uploads tfsec, Checkov, Trivy, and Semgrep SARIF results to the GitHub Security dashboard
+  - uploads the ZAP baseline HTML report as the `zap-report` workflow artifact when `DAST_TARGET_URL` is set and reachable
 - `terraform-apply.yml`
   - configures AWS credentials
   - checks the Terraform backend exists

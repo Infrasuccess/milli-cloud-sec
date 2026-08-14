@@ -53,7 +53,7 @@ variable "allowed_ingress_cidr" {
 }
 
 variable "enable_ssh" {
-  description = "Enable SSH 22 ingress to the target from the named IPs in security_groups.tf"
+  description = "Enable SSH 22 ingress to the target and scanner from the named IPs in security_groups.tf"
   type        = bool
   default     = false
 }
