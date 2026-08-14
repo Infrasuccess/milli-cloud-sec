@@ -12,6 +12,7 @@ permissions:
   actions: read
   contents: read
   security-events: write
+  pull-requests: write
 
 concurrency:
   group: ci-security-devsec
@@ -69,6 +70,29 @@ jobs:
         run: |
           terraform -chdir=${{ env.TF_WORKING_DIR }} init -backend=false -input=false
           terraform -chdir=${{ env.TF_WORKING_DIR }} validate
+
+      - name: Terraform Plan (Security Scan)
+        id: tf-plan
+        run: |
+          terraform -chdir=${{ env.TF_WORKING_DIR }} plan -input=false -no-color > tfplan.txt 2>&1 || true
+          echo "=== TERRAFORM PLAN ===" >&2
+          cat tfplan.txt >&2
+
+      - name: Post Terraform Plan to PR Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('tfplan.txt', 'utf8');
+             
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔧 Terraform Plan\n\n\`\`\`terraform\n${plan}\n\`\`\``
+            });
 
       - name: tfsec scan
         uses: aquasecurity/tfsec-action@v1.0.3

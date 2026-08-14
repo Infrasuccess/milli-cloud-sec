@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: terraform-devsec-apply
@@ -70,7 +71,34 @@ jobs:
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} validate
 
       - name: Terraform Plan
-        run: terraform -chdir=${{ env.TF_WORKING_DIR }} plan -input=false -out=tfplan -var="notification_email=${{ secrets.BUDGET_EMAIL }}"
+        run: |
+          terraform -chdir=${{ env.TF_WORKING_DIR }} plan \
+            -input=false \
+            -out=tfplan \
+            -var="notification_email=${{ secrets.BUDGET_EMAIL }}"
+        id: tf-plan
+
+      - name: Terraform Plan Output
+        run: |
+          terraform -chdir=${{ env.TF_WORKING_DIR }} show -no-color tfplan | tee tfplan.txt
+          echo "=== TERRAFORM PLAN OUTPUT ===" >&2
+          cat tfplan.txt >&2
+
+      - name: Post Plan to PR Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('${{ env.TF_WORKING_DIR }}/tfplan.txt', 'utf8');
+             
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📋 Terraform Plan\n\`\`\`terraform\n${plan}\n\`\`\``
+            });
 
       - name: Terraform Apply
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} apply -input=false -auto-approve tfplan
