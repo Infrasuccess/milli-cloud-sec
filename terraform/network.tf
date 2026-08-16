@@ -1,3 +1,4 @@
+# This is the Terraform configuration for creating the AWS network infrastructure. It defines a VPC, an internet gateway, a public subnet, a route table, and the necessary route table associations. The resources are named based on the project name and environment.
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true

@@ -1,3 +1,4 @@
+# This is the Terraform configuration for creating AWS security groups. It defines three security groups: one for the target application, one for the scanner/jump host, and a default security group. The target security group allows HTTP and optional HTTPS ingress from a specified CIDR block, while the scanner security group allows all egress traffic. Additionally, there are conditional ingress rules for SSH access to both the target and scanner security groups based on a variable that enables or disables SSH access.
 resource "aws_security_group" "target_sg" {
   name        = "${var.project_name}-${var.environment}-target-sg"
   description = "Target SG for vulnerable app lab"

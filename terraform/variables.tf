@@ -1,3 +1,4 @@
+# This is the Terraform configuration file for defining input variables used across the project. It includes variables for AWS region, project details, VPC and subnet configuration, EC2 instance settings, allowed ingress CIDR, SSH access, budget settings, scheduling, and Qualys integration.
 variable "aws_region" {
   description = "AWS region"
   type        = string

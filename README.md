@@ -19,7 +19,7 @@ Personal AWS DevSecOps lab using Terraform + GitHub Actions with SAST, DAST, and
 
 
 ## Terraform Layout
-- `providers.tf`, `versions.tf`, `variables.tf`, `outputs.tf` hold shared provider, version, input, and output definitions
+- `main.tf`, `variables.tf`, `outputs.tf` hold shared provider, version, input, and output definitions
 - `backend.tf` configures the S3 remote state backend and DynamoDB locking
 - `data.tf` contains shared AWS data sources
 - `network.tf` defines the VPC, subnet, internet gateway, and routing
