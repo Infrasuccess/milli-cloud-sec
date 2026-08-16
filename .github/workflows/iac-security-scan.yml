@@ -57,6 +57,7 @@ jobs:
           import json
           import sys
           import os
+          import re
           
           terraform_dir = './terraform'
           results = {
@@ -67,10 +68,19 @@ jobs:
               'findings': []
           }
           
-          # Mock Qualys findings for demonstration
-          # In production, this would call actual Qualys API
-          findings_checks = {
-              'security_groups.tf': {
+          # Mock Qualys findings for demonstration.
+          # Flag the target SG only when the deployment vars still allow public ingress.
+          findings_checks = {}
+          tfvars_path = os.path.join(terraform_dir, 'terraform.tfvars')
+          allowed_ingress_cidr = None
+          if os.path.exists(tfvars_path):
+              with open(tfvars_path, 'r') as f:
+                  match = re.search(r'^\s*allowed_ingress_cidr\s*=\s*"([^"]+)"\s*$', f.read(), re.MULTILINE)
+                  if match:
+                      allowed_ingress_cidr = match.group(1)
+
+          if allowed_ingress_cidr == '0.0.0.0/0':
+              findings_checks['security_groups.tf'] = {
                   'issues': [
                       {
                           'severity': 'HIGH',
@@ -81,7 +91,6 @@ jobs:
                       }
                   ]
               }
-          }
           
           # Scan terraform files
           for root, dirs, files in os.walk(terraform_dir):

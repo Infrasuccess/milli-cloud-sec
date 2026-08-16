@@ -50,7 +50,7 @@ variable "key_name" {
 variable "allowed_ingress_cidr" {
   description = "Allowed ingress CIDR for HTTP/HTTPS to target"
   type        = string
-  default     = "0.0.0.0/0"
+  default     = "108.239.113.218/32"
 }
 
 variable "enable_ssh" {
