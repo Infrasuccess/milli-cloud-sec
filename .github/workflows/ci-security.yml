@@ -275,7 +275,7 @@ jobs:
       - name: ZAP Baseline
         if: steps.dast_precheck.outputs.run_dast == 'true'
         continue-on-error: true
-        uses: zaproxy/action-baseline@v0.12.0
+        uses: zaproxy/action-baseline@v0.15.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           target: ${{ secrets.DAST_TARGET_URL }}
