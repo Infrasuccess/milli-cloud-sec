@@ -134,7 +134,7 @@ jobs:
           severity: CRITICAL,HIGH
 
       - name: Set up Python for Semgrep
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 
